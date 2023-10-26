@@ -10,6 +10,8 @@ export default {
   initialize(container) {
     const siteSettings = container.lookup("site-settings:main");
     const currentUser = container.lookup("current-user:main");
+    const appEvents = container.lookup("service:app-events");
+
     if (
       !siteSettings.user_notes_enabled ||
       !currentUser ||
@@ -68,8 +70,13 @@ export default {
           return;
         }
 
-        const cfs = dec.attrs.userCustomFields || {};
-        if (cfs.user_notes_count > 0) {
+        const post = dec.getModel();
+        if (!post) {
+          return;
+        }
+
+        const ucf = post.user_custom_fields || {};
+        if (ucf.user_notes_count > 0) {
           return dec.attach("user-notes-icon");
         }
       });
@@ -79,23 +86,39 @@ export default {
           return;
         }
 
-        const cfs = dec.attrs.userCustomFields || {};
-        if (cfs.user_notes_count > 0) {
+        const post = dec.getModel();
+        if (!post) {
+          return;
+        }
+
+        const ucf = post.user_custom_fields || {};
+        if (ucf.user_notes_count > 0) {
           return dec.attach("user-notes-icon");
         }
       });
+      api.addPostAdminMenuButton((attrs) => {
+        return {
+          icon: "pencil-alt",
+          label: "user_notes.attach",
+          action: (post) => {
+            showUserNotes(
+              store,
+              attrs.user_id,
+              (count) => {
+                const ucf = post.user_custom_fields || {};
+                ucf.user_notes_count = count;
+                post.set("user_custom_fields", ucf);
 
-      api.decorateWidget("post-admin-menu:after", (dec) => {
-        return dec.h(
-          "ul",
-          dec.attach("post-admin-menu-button", {
-            icon: "pencil-alt",
-            label: "user_notes.attach",
-            action: "showUserNotes",
-            secondaryAction: "closeAdminMenu",
-            className: "add-user-note",
-          })
-        );
+                appEvents.trigger("post-stream:refresh", {
+                  id: post.id,
+                });
+              },
+              { postId: attrs.id }
+            );
+          },
+          secondaryAction: "closeAdminMenu",
+          className: "add-user-note",
+        };
       });
 
       api.attachWidgetAction("post", "showUserNotes", widgetshowUserNotes);
