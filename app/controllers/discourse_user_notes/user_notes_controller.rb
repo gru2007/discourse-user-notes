@@ -4,7 +4,12 @@ module DiscourseUserNotes
   class UserNotesController < ::ApplicationController
     requires_plugin DiscourseUserNotes::PLUGIN_NAME
     before_action :ensure_logged_in
-    before_action :ensure_staff
+    before_action :ensure_can_note
+
+
+    def ensure_can_note
+      raise Discourse::InvalidAccess.new unless current_user && current_user.whisperer?
+    end
 
     def index
       user = User.where(id: params[:user_id]).first
