@@ -4,7 +4,7 @@ import { showUserNotes } from "discourse/plugins/discourse-user-notes/discourse-
 export default {
   shouldRender(args, component) {
     const { siteSettings, currentUser } = component;
-    return siteSettings.user_notes_enabled && currentUser && currentUser.staff;
+    return siteSettings.user_notes_enabled && currentUser && currentUser.whisperer;
   },
 
   setupComponent(args, component) {
