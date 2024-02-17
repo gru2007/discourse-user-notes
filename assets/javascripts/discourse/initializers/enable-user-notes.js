@@ -12,7 +12,7 @@ export default {
     const currentUser = container.lookup("service:current-user");
     const appEvents = container.lookup("service:app-events");
 
-    if (!siteSettings.user_notes_enabled || !currentUser?.staff) {
+    if (!siteSettings.user_notes_enabled || !currentUser?.whisperer) {
       return;
     }
 
